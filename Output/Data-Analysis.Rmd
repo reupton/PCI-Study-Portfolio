@@ -1,0 +1,120 @@
+---
+title: "PCI Study Data Analysis"
+author: "Becky Upton"
+output: html
+---
+```{r set up, include=FALSE}
+
+library(tidyverse)
+library(rstanarm)
+library(easystats)
+library(ggplot2)
+
+```
+
+```{r load data}
+
+dat_career <- read_csv(here::here("data","PCI_Moms_Career.csv"))
+
+head(dat_career)
+
+dat_career = dat_career [-13,]
+
+dat_career1 <- mutate(dat_career,  gender = factor(Child_Gender,
+                                                      levels = c(1,0),
+                                                      labels = c("boy","girl"))
+)
+
+head(dat_career1)
+
+```
+
+Do mothers' have gender differentiated beliefs about their children's future career interests even at young ages (4-6 years)? 
+
+Prior work suggests that parents play a role in their children’s STEM socialization. Simpkins et al.(2005) found that early science encouragement by parents predicted children’s later science motivation. Because parents’ science encouragement may be shaped by their attitudes, we examined if parents have gender differentiated beliefs about their children’s STEM interests at a young age.
+
+Research question: Do mothers' have gender differentiated beliefs about their children's future career interests even at young ages (4-6 years)? 
+
+I hypothesize that mothers' will have gender differentiated beliefs about their child's future career interests. Specifically, I expect mothers' to give higher interest ratings for STEM careers for boys than for girls.
+
+I will also check other career categories where the gender gap is large (e.g. engineering).
+   
+```{r plot data}
+
+career_plot <- ggplot(data = dat_career1,
+       mapping = aes(y = CareerInterest_STEM, x = gender )) +
+  geom_point()
+
+career_plot
+
+career2_plot <- ggplot(data = dat_career1,
+       mapping = aes(y = CareerInterest_NonSTEM, x = gender )) +
+  geom_point()
+
+career2_plot
+
+eng_histo <- ggplot(data = dat_career1,
+       mapping = aes(x = M_Engineering, color = gender)) +
+  geom_histogram()
+
+eng_histo
+
+```
+   
+
+```{r fit model STEM}
+
+mod_STEM <- lm(
+  CareerInterest_STEM ~ gender,
+  data = dat_career1
+)
+
+param_STEM <- parameters(mod_STEM)
+
+param_STEM
+
+```
+```{r fit model non STEM}
+
+mod_nonSTEM <- lm(
+  CareerInterest_NonSTEM ~ gender,
+  data = dat_career1
+)
+
+param_nonSTEM <- parameters(mod_nonSTEM)
+
+param_nonSTEM
+
+```
+
+```{r fit model eng}
+
+mod_eng <- lm(
+  M_Engineering ~ gender,
+  data = dat_career1
+)
+
+param_eng <- parameters(mod_eng)
+
+param_eng
+
+```
+
+```{r difference plots}
+
+ggplot(dat_career1) +
+    geom_bar( aes(x=gender, y=CareerInterest_STEM), stat="identity", fill="skyblue", alpha=0.7)
+
+ggplot(dat_career1) +
+    geom_bar( aes(x=gender, y=CareerInterest_NonSTEM), stat="identity", fill="skyblue", alpha=0.7)
+
+ggplot(dat_career1) +
+    geom_bar( aes(x=gender, y=M_Engineering), stat="identity", fill="skyblue", alpha=0.7)
+
+```
+    
+On average, my results suggest that on average mothers rate boys as having a higher interest in a future STEM career than girls. My model estimates that mothers rate boys future STEM career interests as 0.26 higher than those of girls (CI: 0.50 to 0.02). Conversely, the model also suggests that mothers rate girls as having a higher interest in a future non-STEM career than boys. My model estimates that mothers rate girls future non STEM career interests as 0.30 higher than those of boys (CI: 0.07 to 0.52).Lastly, I also found that mothers rate boys as having a higher interest in a future career in engineering than girls. My model estimates that mother rate girls future engineering interest as 0.36 lower than boys (CI: -0.67 to -.05). These findings suggest that even at an early age mothers may have gender differentiated beliefs about their children’s future career interests. Gender differentiated attitudes have implications for the level of support children may receive in these areas and their future science motivation. These findings also support the idea that science socialization begins at an early age and that it may be differentiated for boys and girls. These findings have implications for children’s early science opportunities that may shape future career in STEM.
+ 
+ Each of my models have large uncertainty intervals, however, none of them contain 0. This suggests there is an overall difference in mothers' ratings for boys and girls but the true difference is unclear. Additionally, since I am limited in my data, I am not able to control for any variables such as child's current interests or parents' interests, I cannot say why this is the case.
+ 
+ Even though the confidence intervals are large, if the true difference in ratings was on the smaller end, I would argue that it is still meaningful. It suggests that even at a very young age, mothers' may have gender differentiated beliefs about their children's interests which even if they are small could have very real implications over the course of the child's life.
